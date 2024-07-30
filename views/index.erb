@@ -1,0 +1,18 @@
+<h2> Здравствуйте, зарегистрируйтесь </h2>
+
+<p> <%= @login ? "Login and password: #{@login} - #{@pass}" : "Введите свой логин и пароль" %> </p>
+<p> <%= @access_denied %> </p>
+
+<form action="/" method="post">
+  <div class="mb-3">
+    <label class="form-label">Логин:</label>
+    <input class="form-control" type="text" name="login" />
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Пароль:</label>
+    <input class="form-control" type="password" name="pass" />
+  </div>
+
+  <button type="submit" class="btn btn-primary">OK</button>
+</form>

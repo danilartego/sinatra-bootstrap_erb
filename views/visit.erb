@@ -1,21 +1,31 @@
 <h2>Записатьcя на прием</h2>
 <p>Заполните форму и мы свяжемся с вами в ближайшее время.</p>
 
-<form acrion="/visit" method="POST" role="form">
+<form action="/visit" method="POST" role="form">
   <div class="mb-3">
     <label class="form-label">Ваше имя:</label>
     <input name="username" type="text" class="form-control" placeholder="Введите ваше имя">
   </div>
 
-    <div class="mb-3">
+  <div class="mb-3">
     <label class="form-label">Ваш телефон:</label>
     <input name="phone" type="text" class="form-control" placeholder="Введите ваш телефон">
   </div>
 
-    <div class="mb-3">
+  <div class="mb-3">
     <label class="form-label">Время записи:</label>
     <input name="datetime" type="text" class="form-control" placeholder="Введите дату и время">
   </div>
 
+  <div class="mb-3">
+  <label class="form-label">Выберете барбера:</label>
+  <select name="barber" class="form-select" aria-label="Default select example">
+    <option selected>Выберете барбера</option>
+    <option value="Jessy Pinkman">Jessy Pinkman</option>
+    <option value="Wolter White">Wolter White</option>
+    <option value="Guss Fridman">Guss Fridman</option>
+  </select>
+  </div>
+  
   <button type="submit" class="btn btn-primary">Записаться</button>
 </form>
