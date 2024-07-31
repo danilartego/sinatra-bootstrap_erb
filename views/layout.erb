@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
 		<title>Barbershop</title>
-		
+
 	  <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -10,6 +10,8 @@
     <link href="https://getbootstrap.com/docs/5.3/assets/css/docs.css" rel="stylesheet">
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+		
+		<script type="text/javascript" src="/scripts.js"></script>
 
   </head>
   <body>
@@ -25,6 +27,7 @@
 							<a class="nav-link active" aria-current="page" href="/">Home</a>
 							<a class="nav-link" href="/about">О Нас</a>
 							<a class="nav-link" href="/visit">Записаться</a>
+							<a class="nav-link" href="/login">Войти</a>
 							<a class="nav-link disabled" aria-disabled="true">Disabled</a>
 						</div>
 					</div>
@@ -33,9 +36,7 @@
 		
 
 			<div>
-				<% if @error %>
-						<div class="alert alert-error"><%= @error %></div>
-				<% end %>
+				<div class="alert alert-error"><%= @error if @error %></div>
 				<%= yield %>
 			</div>
 
