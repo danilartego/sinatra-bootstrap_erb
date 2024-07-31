@@ -4,17 +4,17 @@
 <form action="/visit" method="POST" role="form">
   <div class="mb-3">
     <label class="form-label">Ваше имя:</label>
-    <input name="username" type="text" class="form-control" placeholder="Введите ваше имя">
+    <input name="username" type="text" class="form-control" placeholder="Введите ваше имя" value=<%= @username %>>
   </div>
 
   <div class="mb-3">
     <label class="form-label">Ваш телефон:</label>
-    <input name="phone" type="text" class="form-control" placeholder="Введите ваш телефон">
+    <input name="phone" type="text" class="form-control" placeholder="Введите ваш телефон" value=<%= @phone %>>
   </div>
 
   <div class="mb-3">
     <label class="form-label">Время записи:</label>
-    <input name="datetime" type="text" class="form-control" placeholder="Введите дату и время">
+    <input name="datetime" type="text" class="form-control" placeholder="Введите дату и время" value=<%= @datetime %>>
   </div>
 
   <div class="mb-3">
@@ -49,5 +49,7 @@
 </form>
 
 <script type="text/javascript">
-  $('#color').simplecolorpicker();
+  $(function(){ // Обертка позволяет выполнить функцию порсле полной загрузки страницы
+    $('#color').simplecolorpicker(); // Инициализация плагина simplecolorpicker JQuery
+  });
 </script>
