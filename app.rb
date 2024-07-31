@@ -23,12 +23,13 @@ post "/visit" do
   @phone = params[:phone]
   @datetime = params[:datetime]
   @barber = params[:barber]
+  @color = params[:color]
 
   File.open("./public/users.txt", "a") do |file|
-    file.write "#{@username} - #{@phone} - #{@datetime} - #{@barber}"
+    file.write "#{@username} - #{@phone} - #{@datetime} - #{@barber} - #{@color}"
     file.write "\n"
   end
-  erb "#{@username} - #{@phone} - #{@datetime} - #{@barber}"
+  erb "#{@username} - #{@phone} - #{@datetime} - #{@barber} - #{@color}"
 end
 
 post "/" do
