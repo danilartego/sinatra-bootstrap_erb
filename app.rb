@@ -10,9 +10,9 @@ get "/about" do
   erb :about
 end
 
-# get "/visit" do
-#   erb :visit
-# end
+get "/visit" do
+  erb :visit
+end
 
 post "/visit" do
   @username = params[:username]
@@ -24,7 +24,7 @@ post "/visit" do
     file.write "#{@username} - #{@phone} - #{@datetime} - #{@barber}"
     file.write "\n"
   end
-  erb :visit
+  erb "#{@username} - #{@phone} - #{@datetime} - #{@barber}"
 end
 
 post "/" do
@@ -32,7 +32,7 @@ post "/" do
   @pass = params[:pass]
 
   if @login == "admin" && @pass == "secret"
-    @error = "Вы вошли в свою учетную запись"
+    @error = "Вы вошли в свою учетную запись" 
     erb :visit
   elsif @login == "admin" && @pass == "admin"
     @access_denied = "Хорошая попытка!, но неправильный пароль или логин"
