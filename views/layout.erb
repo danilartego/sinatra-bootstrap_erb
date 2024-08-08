@@ -19,8 +19,6 @@
 
 		<script src="jquery.simplecolorpicker.js"></script>
 
-		
-
   </head>
   <body>
 		<div class="container ">
@@ -41,10 +39,9 @@
 					</div>
 				</div>
 			</nav>
-		
 
 			<div>
-				<% if @error then %>
+				<% if @error %>
 					<div class="alert alert-danger"><%= @error %></div>
 				<% end %>
 				<%= yield %>
@@ -53,4 +50,3 @@
 		</div>
   </body>
 </html>
-

@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'sinatra'
 require 'sinatra/reloader'
+require 'dotenv/load'
 
 get '/' do
   erb 'Вы на сайте где можно записаться на стрижку'
@@ -48,7 +49,7 @@ post '/' do
   @login = params[:login]
   @pass = params[:pass]
 
-  if @login == 'admin' && @pass == 'secret'
+  if @login == ENV['LOGIN'] && @pass == ENV['PASS']
     @error = 'Вы вошли в свою учетную запись'
     erb :visit
   elsif @login == 'admin' && @pass == 'admin'
