@@ -4,16 +4,22 @@ require "sinatra/reloader"
 require "dotenv/load"
 require "sqlite3"
 
+def get_db
+  SQLite3::Database.new "_base.db"
+  # db.results_as_hash = true
+  # return db
+end
+
 configure do
-  @db = SQLite3::Database.new "_base.db"
-  @db.execute 'CREATE TABLE IF NOT EXISTS "users" (
+  db = get_db
+  db.execute 'CREATE TABLE IF NOT EXISTS "users" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-    "usename" TEXT,
+    "username" TEXT,
     "phone"	TEXT,
     "datestamp"	TEXT,
     "barber"	TEXT,
     "color"	TEXT
-  );'
+  )'
 end
 
 get "/" do
@@ -50,9 +56,15 @@ post "/visit" do
 
   return erb :visit if @error != ""
 
-  File.open("./public/users.txt", "a") do |file|
-    file.write "#{@username} - #{@phone} - #{@datetime} - #{@barber} - #{@color}\n"
-  end
+  # Запись данных в текстовый файл
+  # File.open("./public/users.txt", "a") do |file|
+  #   file.write "#{@username} - #{@phone} - #{@datetime} - #{@barber} - #{@color}\n"
+  # end
+
+  # Запись данных в БД
+  db = get_db
+  db.execute "INSERT INTO users (username, phone, datestamp, barber, color)
+  VALUES (?, ?, ?, ?, ?)", [@username, @phone, @datetime, @barber, @color]
 
   erb "#{@username} - #{@phone} - #{@datetime} - #{@barber} - #{@color}"
 end
