@@ -1,6 +1,13 @@
 <h2>Записатьcя на прием</h2>
 <p>Заполните форму и мы свяжемся с вами в ближайшее время.</p>
 
+<script type="text/javascript">
+  $(function(){ // Обертка позволяет выполнить функцию порсле полной загрузки страницы
+    $('#color').simplecolorpicker(); // Инициализация плагина simplecolorpicker JQuery
+    $('#datetimepicker').datetimepicker();
+  });
+</script>
+
 <form action="/visit" method="POST" role="form">
   <div class="mb-3">
     <label class="form-label">Ваше имя:</label>
@@ -14,15 +21,15 @@
 
   <div class="mb-3">
     <label class="form-label">Время записи:</label>
-    <input name="datetime" type="text" class="form-control" placeholder="Введите дату и время" value=<%= @datetime %>>
+    <input id="datetimepicker" name="datetime" type="text" class="form-control" placeholder="Введите дату и время" value=<%= @datetime %>>
   </div>
 
   <div class="mb-3">
   <label class="form-label">Выберете барбера:</label>
   <select name="barber" class="form-select">
-    <option <%= @barber == 'Jessy Pinkman' ? 'selected' : ''%>>Jessy Pinkman</option>
-    <option <%= @barber == 'Wolter White' ? 'selected' : ''%>>Wolter White</option>
-    <option <%= @barber == 'Guss Fridman' ? 'selected' : ''%>>Guss Fridman</option>
+    <option <%= @barber == "Jessy Pinkman" ? "selected" : "" %>>Jessy Pinkman</option>
+    <option <%= @barber == "Wolter White" ? "selected" : "" %>>Wolter White</option>
+    <option <%= @barber == "Guss Fridman" ? "selected" : "" %>>Guss Fridman</option>
   </select>
   </div>
 
@@ -46,9 +53,3 @@
 
   <button type="submit" class="btn btn-primary">Записаться</button>
 </form>
-
-<script type="text/javascript">
-  $(function(){ // Обертка позволяет выполнить функцию порсле полной загрузки страницы
-    $('#color').simplecolorpicker(); // Инициализация плагина simplecolorpicker JQuery
-  });
-</script>
