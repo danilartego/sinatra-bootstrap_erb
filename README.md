@@ -1,61 +1,116 @@
-## Урок 26
+## Урок 27
 
-Как сохранять введённые данные в поле selected (html):
+> Отделить логику от представления.
 
-```ruby
-<option value="Опция 1"<%= @option == 'Опция 1' ? ' selected' %>>Опция 1</option>
-```
-
-app.rb
+Синтаксис в erb, будет выполнено, но ничего не будет выводиться:
 
 ```ruby
-require 'sqlite3'
-
-db = SQLite3::Database.new 'base.sqlite'
+<% %>
 ```
 
-В SQLite использовать тип TEXT, поправка к предыдущему уроку.
-
-#### SQL:
-
-##### Такой способ записи будем применять для создания базы данных и таблиц в ней при инициализации приложения:
-
-```sql
-CREATE TABLE IF NOT EXISTS "Users" ("Id" INTEGER PRIMARY KEY AUTOINCREMENT, "Username" TEXT, "Phone" TEXT);
-```
-
-Удалить таблицу:
-
-```sql
-DROP TABLE Users;
-```
-
->  Ссылка: Шпаргалка по SQLite3 (русская версия)
->  https://github.com/krdprog/sqlite-3-rus-howto
-
-> Базу данных не принято коммитить в репозиторий и мешать с исходным кодом. Базу данных надо добавлять в .gitignore
-
-##### В Sinatra есть специальная команда, которая запускается при инициализации приложения:
+Будет выводиться в месте, где стоит:
 
 ```ruby
-configure do
-  # some code
+<%= %>
+```
+
+#### Отображение на веб-странице данных из базы данных:
+
+Добавить в app.rb
+
+```ruby
+# Method connect with database
+def get_db
+  @db = SQLite3::Database.new 'base.db'
+  @db.results_as_hash = true
+  return @db
+end
+
+# Show result in admin panel
+get '/admin/show' do
+  get_db
+
+  @results = @db.execute 'SELECT * FROM Messages ORDER BY id DESC'
+  @db.close
+
+  erb :show
 end
 ```
 
-##### Создадим базу данных при инициализации приложения:
-
-При этом у нас подключены гемы:
+views/show.erb
 
 ```ruby
-require 'sinatra'
-require 'sqlite3'
+<table border="1">
+  <tr>
+    <th>Имя</th>
+    <th>Телефон</th>
+    <th>E-mail</th>
+    <th>Опция</th>
+    <th>Комментарий</th>
+  </tr>
+
+<% @results.each do |row| %>
+
+  <tr>
+    <td><%= row['username'] %></td>
+    <td><%= row['phone'] %></td>
+    <td><%= row['email'] %></td>
+    <td><%= row['option'] %></td>
+    <td><%= row['comment'] %></td>
+  </tr>
+
+<% end %>
+
+</table>
+```
+
+Покрасим в красный цвет первую запись:
+
+```ruby
+<%= "style='background-color: red; color: white;'" if row == @results.first %>
+```
+
+erb:
+
+```ruby
+<% @results.each do |row| %>
+
+  <tr <%= "style='background-color: red; color: white;'" if row == @results.first %>>
+    <td><%= row['username'] %></td>
+    <td><%= row['phone'] %></td>
+    <td><%= row['email'] %></td>
+    <td><%= row['option'] %></td>
+    <td><%= row['comment'] %></td>
+  </tr>
+
+<% end %>
+```
+
+#### Решение задания:
+
+> В configure сделать дополнительную таблицу Barbers со списком парикмахеров. Загружать список парикмахеров в configure (вставка в таблицу 1 раз) - сделаю для контактной формы для поля Options:
+
+```ruby
+# Method validation data Options table in database
+def is_option_exists? base, param
+  base.execute('SELECT * FROM Options WHERE option=?', [param]).length > 0
+end
+
+# Method add data to table in database
+def seed_db base, options
+  options.each do |option|
+    if !is_option_exists? @db, option
+      base.execute 'INSERT INTO Options (option) VALUES (?)', [option]
+    end
+  end
+end
 ```
 
 ```ruby
+# Configure application
 configure do
-  @db = SQLite3::Database.new 'base.db'
-
+  get_db
+  # create table Messages in database
   @db.execute 'CREATE TABLE IF NOT EXISTS "Messages"
     (
       "id" INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,138 +120,121 @@ configure do
       "option" TEXT,
       "comment" TEXT
     )'
-  # db.close (надо?)
+
+  # create table Options in database
+  @db.execute 'CREATE TABLE IF NOT EXISTS "Options"
+    (
+      "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+      "option" TEXT
+    )'
+
+  # add data to table
+  seed_db @db, ['Foo', 'Faa', 'Moo', 'Zoo', 'Faz', 'Maz', 'Kraz']
+
+  @db.close
 end
 ```
 
-или в одну строку, но менее читаемо:
+seed_db - seed устоявшееся выражение - наполнить
+
+#### Понятие миграция (база данных).
+
+Механизмы миграции, чтобы версия базы данных всегда совпадала с версией кода.
+
+to keep up to date - держать в актуальном состоянии
+
+Откат БД вместе с программным кодом.
+
+Дальше будем проходить наполнение и миграции. База наполняется из програмного кода.
+
+#### Синтаксис before (в sinatra) - исполняет код перед запросом - будет доступно во всех представлениях
 
 ```ruby
-configure do
-  @db = SQLite3::Database.new 'base.db'
-
-  @db.execute 'CREATE TABLE IF NOT EXISTS "Messages" ("id" INTEGER PRIMARY KEY AUTOINCREMENT, "username" TEXT, "phone" TEXT, "email" TEXT, "option" TEXT, "comment" TEXT)'
-  # @db.close (надо?)
+before do
+  # some code
 end
 ```
 
-> Ссылка: Escaping Strings For Ruby SQLite Insert
-> https://stackoverflow.com/questions/9614236/escaping-strings-for-ruby-sqlite-insert
+#### Как загружать варианты в select формы из базы данных:
 
-> Prepare:
-> https://www.rubydoc.info/github/luislavena/sqlite3-ruby/SQLite3/Database#prepare-instance_method
+В app.rb добавим часть кода:
 
-> Про вставку данных:
-> https://stackoverflow.com/questions/13462112/inserting-ruby-string-into-sqlite
+```ruby
+# Index page with form
+get '/' do
 
-> Документация:
-> https://www.rubydoc.info/github/luislavena/sqlite3-ruby
-> 
-> https://www.rubydoc.info/github/luislavena/sqlite3-ruby/SQLite3/Database
+  # Write to array data from database table Options
+  get_db
+  @options = @db.execute 'SELECT * FROM Options'
+  @db.close
 
-#### Вставка данных в БД в Sinatra app:
+  @title = "Форма заявки для Sinatra (Ruby)"
+  erb :index
+end
+```
 
-Переменная @db не сработала, сделали через db
+в views/index.erb в форме заменим статические данные на :
 
+```ruby
+<p>
+  <select name="option">
+    <option value="" selected>Выбрать опцию...</option>
+    <% @options.each do |item| %>
+    <option value="<%= item['option'] %>"><%= item['option'] %></option>
+    <% end %>
+  </select>
+</p>
+```
+
+Вставка, чтобы сделать select - selected
+
+```ruby
+<option <%= @barber == item['name'] ? 'selected' : '' %>><%= item['name'] %></option>
+```
+
+configure - при запуске программы
+before - при каждом обращении к программе
+
+### Добавлние в базу с проверкой (альтернативный вариант)
+**Код не проверен**
 ```ruby
 require 'sinatra'
 require 'sqlite3'
 
-def get_db
-  return SQLite3::Database.new 'base.db'
-end
+# Создаем или открываем базу данных
+db = SQLite3::Database.new 'database.db'
 
-configure do
-  db = get_db
-  db.execute 'CREATE TABLE IF NOT EXISTS "Messages"
-    (
-      "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-      "username" TEXT,
-      "phone" TEXT,
-      "email" TEXT,
-      "option" TEXT,
-      "comment" TEXT
-    )'
-  db.close
-end
+# Создаем таблицу, если она не существует
+db.execute <<-SQL
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY,
+    name TEXT UNIQUE
+  );
+SQL
 
-def save_form_data_to_database
-  db = get_db
-  db.execute 'INSERT INTO Messages (username, phone, email, option, comment)
-  VALUES (?, ?, ?, ?, ?)', [@username, @phone, @email, @option, @comment]
-  db.close
-end
+# Роут для добавления данных
+post '/add_user' do
+  name = params[:name]
 
-get '/' do
-  @title = "Форма заявки для Sinatra (Ruby)"
-  erb :index
-end
-
-post '/' do
-  @username = params[:username]
-  @phone = params[:phone]
-  @email = params[:email]
-  @option = params[:option]
-  @comment = params[:comment]
-
-  save_form_data_to_database
-
-  @title = "Спасибо, ваше сообщение отправлено"
-  erb :sent
+  begin
+    db.execute('INSERT OR IGNORE INTO users (name) VALUES (?)', [name])
+    if db.changes > 0
+      status 201
+      body 'User added successfully.'
+    else
+      status 409
+      body 'User already exists.'
+    end
+  rescue SQLite3::Exception => e
+    status 500
+    body "Database error: #{e.message}"
+  end
 end
 ```
+В этом примере:
 
-> Полная работающая версия формы со всеми файлами тут:
-> https://github.com/krdprog/contact-form-for-sinatra-ruby-rus
-
-К полю выбора даты можно подключить плагин:
-
-> Плагин для выбора даты (js)
-> https://github.com/xdan/datetimepicker
-
-#### Вывод результатов (данных) из базы данных:
-
-Чтобы выводить результаты в виде хеша, надо добавить:
-
-```ruby
-db.results_as_hash = true
-```
-
-Добавим в ранее созданный метод и переделаем app.rb:
-
-```ruby
-def get_db
-  db = SQLite3::Database.new 'base.db'
-  db.results_as_hash = true
-  return db
-end
-```
-
-#### Домашнее задание:
-
-1. сделать страницу показа результата из базы данных используя запрос
-
-```sql
-SELECT * FROM Users ORDER BY id DESC
-```
-
-> Ссылка SQLite ORDER BY:
-> http://www.tutorialspoint.com/sqlite/sqlite_order_by.htm
-
-2. В configure сделать дополнительную таблицу Barbers со списком парикмахеров. Загружать список парикмахеров в configure (вставка в таблицу 1 раз).
-
-3. Загрузить данные из таблицы Barbers в форму в выпадающий список select.
-
----
-
-**Следующий урок:**  https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-27.md
-
-## Навигация по конспектам (по-одному уроку в файле):
-
-| N                                                                                     | N                                                                                     | N                                                                                     | N                                                                                     | N                                                                                     | N                                                                                     | N                                                                                     | N                                                                                     | N                                                                                     | N                                                                                     |
-| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| [01](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-01.md) | [02](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-02.md) | [03](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-03.md) | [04](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-04.md) | [05](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-05.md) | [06](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-06.md) | [07](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-07.md) | [08](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-08.md) | [09](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-09.md) | [10](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-10.md) |
-| [11](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-11.md) | [12](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-12.md) | [13](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-13.md) | [14](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-14.md) | [15](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-15.md) | [16](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-16.md) | [17](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-17.md) | [18](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-18.md) | [19](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-19.md) | [20](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-20.md) |
-| [21](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-21.md) | [22](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-22.md) | [23](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-23.md) | [24](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-24.md) | [25](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-25.md) | [26](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-26.md) | [27](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-27.md) | [28](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-28.md) | [29](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-29.md) | [30](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-30.md) |
-| [31](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-31.md) | [32](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-32.md) | [33](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-33.md) | [34](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-34.md) | [35](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-35.md) | [36](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-36.md) | [37](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-37.md) | [38](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-38.md) | [39](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-39.md) | [40](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-40.md) |
-| [41](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-41.md) | [42](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-42.md) | [43](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-43.md) | [44](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-44.md) | [45](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-45.md) | [46](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-46.md) | [47](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-47.md) | [48](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-48.md) | [49](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-49.md) | [50](https://github.com/krdprog/rubyschool-notes/blob/master/one-by-one/lesson-50.md) |
+- Таблица users создается с уникальным ограничением на поле name.
+- В POST-запросе /add_user мы используем INSERT OR IGNORE INTO users (name) VALUES (?), чтобы попытаться вставить новое имя.
+- Если вставка выполнена успешно (db.changes > 0), возвращается статус 201 и сообщение об успешном добавлении.
+- Если вставка игнорируется из-за дублирования (db.changes == 0), возвращается статус 409 и сообщение о существующем пользователе.
+- В случае ошибки базы данных возвращается статус 500 и сообщение об ошибке.
