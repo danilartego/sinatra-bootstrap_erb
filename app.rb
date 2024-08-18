@@ -102,7 +102,7 @@ post "/visit" do
   db.execute "INSERT INTO users (username, phone, datestamp, barber, color)
   VALUES (?, ?, ?, ?, ?)", [@username, @phone, @datetime, @barber, @color]
 
-  erb "Спасибо, Вы записаны:
+  erb "Спасибо, Вы записались:
   <br> Имя: #{@username} 
   <br>Телефон: #{@phone} 
   <br>На время: #{@datetime} 
