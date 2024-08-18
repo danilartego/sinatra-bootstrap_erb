@@ -4,15 +4,31 @@ require "sinatra/reloader"
 require "dotenv/load"
 require "sqlite3"
 
+# Создание базы и представление в виде хеша
 def get_db
   db = SQLite3::Database.new "_base.db"
   db.results_as_hash = true
   return db
 end
 
+# Проверка имени в базе
+def is_barber_exists? base, name
+  base.execute('SELECT * FROM barbers WHERE barbername=?', [name]).length > 0
+end
+
+# Наполение базы с проверкой на уже существующие имя
+def seed_db base, names
+  names.each do |name|
+    if !is_barber_exists? base, name
+      base.execute 'INSERT INTO barbers (barbername) VALUES (?)', [name]
+    end
+  end
+end
+
 
 configure do
   db = get_db
+  # Создание базы пользователей и записи в нее данные
   db.execute 'CREATE TABLE IF NOT EXISTS "users" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "username" TEXT,
@@ -21,16 +37,17 @@ configure do
     "barber"	TEXT,
     "color"	TEXT
   )'
+  # создание базы барберов
   db.execute 'CREATE TABLE IF NOT EXISTS "barbers" (
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
     "barbername" TEXT UNIQUE
   )'
 
-  barbers = ["Jessie Pinkman", "Walter White", "Gus Fring", "Mike Ehrmantraut"]
+  # добавление данных в базу барберов
+  barbers = ["Gus Fring", "Mike Ehrmantraut", "Jesse Pinkman", "Wolter White"]
 
-  barbers.each do |barber|
-    db.execute 'INSERT OR IGNORE INTO barbers (barbername) VALUES (?)', [barber]
-  end
+  # добавление данных в базу барберов
+  seed_db db, barbers
 end
 
 get "/" do
