@@ -65,8 +65,6 @@ get "/about" do
 end
 
 get "/visit" do
-
-
   erb :visit
 end
 
