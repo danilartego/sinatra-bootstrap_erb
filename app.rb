@@ -5,10 +5,11 @@ require "dotenv/load"
 require "sqlite3"
 
 def get_db
-  SQLite3::Database.new "_base.db"
-  # db.results_as_hash = true
-  # return db
+  db = SQLite3::Database.new "_base.db"
+  db.results_as_hash = true
+  return db
 end
+
 
 configure do
   db = get_db
@@ -20,6 +21,16 @@ configure do
     "barber"	TEXT,
     "color"	TEXT
   )'
+  db.execute 'CREATE TABLE IF NOT EXISTS "barbers" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "barbername" TEXT UNIQUE
+  )'
+
+  barbers = ["Jessie Pinkman", "Walter White", "Gus Fring", "Mike Ehrmantraut"]
+
+  barbers.each do |barber|
+    db.execute 'INSERT OR IGNORE INTO barbers (barbername) VALUES (?)', [barber]
+  end
 end
 
 get "/" do
@@ -31,6 +42,11 @@ get "/about" do
 end
 
 get "/visit" do
+  # @barbers = []
+  # db = get_db
+  # db.execute("select * from barbers") do |row|
+  #   @barbers << row['barbername']
+  # end
   erb :visit
 end
 
@@ -66,7 +82,19 @@ post "/visit" do
   db.execute "INSERT INTO users (username, phone, datestamp, barber, color)
   VALUES (?, ?, ?, ?, ?)", [@username, @phone, @datetime, @barber, @color]
 
-  erb "#{@username} - #{@phone} - #{@datetime} - #{@barber} - #{@color}"
+  erb "Спасибо, Вы записаны:
+  <br> #{@username} | #{@phone} 
+  <br>На время: #{@datetime} 
+  <br>К Барберу: #{@barber} 
+  <br>Цвет: #{@color}"
+end
+
+get "/showusers" do
+
+  db = get_db
+  @db_users = db.execute("select * from users order by id desc")
+
+  erb :showusers
 end
 
 post "/" do
