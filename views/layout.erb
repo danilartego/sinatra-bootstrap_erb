@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
-		<title>Barbershop</title>
+		<title>Barber shop</title>
 
 	  <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -38,7 +38,7 @@
 							<!-- <a class="nav-link active" aria-current="page" href="/">Home</a> -->
 							<a class="nav-link" href="/about">О Нас</a>
 							<a class="nav-link" href="/visit">Записаться</a>
-							<a class="nav-link" href="/showusers">Записались</a>
+							<a class="nav-link" href="/showusers">Список записавшихся</a>
 							<a class="nav-link" href="/login">Войти</a>
 							<!-- <a class="nav-link disabled" aria-disabled="true">Disabled</a> -->
 						</div>
@@ -47,7 +47,7 @@
 			</nav>
 
 			<div>
-				<% if @error %>
+				<% if @error && @error != "" %>
 					<div class="alert alert-danger"><%= @error %></div>
 				<% end %>
 				<%= yield %>

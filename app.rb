@@ -103,7 +103,8 @@ post "/visit" do
   VALUES (?, ?, ?, ?, ?)", [@username, @phone, @datetime, @barber, @color]
 
   erb "Спасибо, Вы записаны:
-  <br> #{@username} | #{@phone} 
+  <br> Имя: #{@username} 
+  <br>Телефон: #{@phone} 
   <br>На время: #{@datetime} 
   <br>К Барберу: #{@barber} 
   <br>Цвет: #{@color}"
