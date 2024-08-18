@@ -194,3 +194,47 @@ end
 
 configure - при запуске программы
 before - при каждом обращении к программе
+
+### Добавлние в базу с проверкой (альтернативный вариант)
+**Код не проверен**
+```ruby
+require 'sinatra'
+require 'sqlite3'
+
+# Создаем или открываем базу данных
+db = SQLite3::Database.new 'database.db'
+
+# Создаем таблицу, если она не существует
+db.execute <<-SQL
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY,
+    name TEXT UNIQUE
+  );
+SQL
+
+# Роут для добавления данных
+post '/add_user' do
+  name = params[:name]
+
+  begin
+    db.execute('INSERT OR IGNORE INTO users (name) VALUES (?)', [name])
+    if db.changes > 0
+      status 201
+      body 'User added successfully.'
+    else
+      status 409
+      body 'User already exists.'
+    end
+  rescue SQLite3::Exception => e
+    status 500
+    body "Database error: #{e.message}"
+  end
+end
+```
+В этом примере:
+
+- Таблица users создается с уникальным ограничением на поле name.
+- В POST-запросе /add_user мы используем INSERT OR IGNORE INTO users (name) VALUES (?), чтобы попытаться вставить новое имя.
+- Если вставка выполнена успешно (db.changes > 0), возвращается статус 201 и сообщение об успешном добавлении.
+- Если вставка игнорируется из-за дублирования (db.changes == 0), возвращается статус 409 и сообщение о существующем пользователе.
+- В случае ошибки базы данных возвращается статус 500 и сообщение об ошибке.

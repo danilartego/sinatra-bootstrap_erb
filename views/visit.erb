@@ -27,9 +27,9 @@
   <div class="mb-3">
   <label class="form-label">Выберете барбера:</label>
   <select name="barber" class="form-select">
-    <option <%= @barber == "Jessy Pinkman" ? "selected" : "" %>>Jessy Pinkman</option>
-    <option <%= @barber == "Wolter White" ? "selected" : "" %>>Wolter White</option>
-    <option <%= @barber == "Guss Fridman" ? "selected" : "" %>>Guss Fridman</option>
+    <% @barbers.each do |barber| %>
+      <option <%= @barber == barber["barbername"] ? "selected" : "" %>><%= barber["barbername"]%></option>
+    <% end %>
   </select>
   </div>
 

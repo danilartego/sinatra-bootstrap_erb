@@ -50,6 +50,12 @@ configure do
   seed_db db, barbers
 end
 
+before do
+  db = get_db
+  @barbers = db.execute("select * from barbers") 
+end
+
+
 get "/" do
   erb "Вы на сайте где можно записаться на стрижку"
 end
@@ -59,11 +65,8 @@ get "/about" do
 end
 
 get "/visit" do
-  # @barbers = []
-  # db = get_db
-  # db.execute("select * from barbers") do |row|
-  #   @barbers << row['barbername']
-  # end
+
+
   erb :visit
 end
 
